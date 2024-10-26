@@ -1,15 +1,16 @@
 import {useState} from 'react';
-import {KeyboardAvoidingView, ScrollView, Text, View} from 'react-native';
+import {KeyboardAvoidingView, ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {TextButton} from '../../components';
 import {Swap} from '../../components/Swap';
-import {TokenSwap} from '../../components/TokenSwap';
 import TabSelector from '../../components/TabSelector';
 import {TOKENSMINT} from '../../constants/tokens';
 import {useStyles} from '../../hooks';
+import {LayerswapView} from '../../modules/Bridge/layerswap';
 import {CashuWalletView} from '../../modules/Cashu';
 import {LightningNetworkWalletView} from '../../modules/Lightning';
+import TokenSwapView from '../../modules/Swap';
 import {DefiScreenProps} from '../../types';
 import {SelectedTab, TABS_DEFI} from '../../types/tab';
 import stylesheet from './styles';
@@ -57,9 +58,7 @@ export const Defi: React.FC<DefiScreenProps> = ({navigation}) => {
             )}
             {selectedTab == SelectedTab.SWAP_AVNU && (
               <View style={{display: 'flex', alignItems: 'center'}}>
-                <TokenSwap
-                  onPress={() => console.log('pressed!')}
-                />
+                <TokenSwapView />
               </View>
             )}
             {/* 
@@ -71,7 +70,6 @@ export const Defi: React.FC<DefiScreenProps> = ({navigation}) => {
 
             {selectedTab == SelectedTab.LIGHTNING_NETWORK_WALLET && (
               <View>
-                <Text style={styles.text}>Zap, Lightning wallet and NWC</Text>
                 <LightningNetworkWalletView></LightningNetworkWalletView>
               </View>
             )}
@@ -80,6 +78,12 @@ export const Defi: React.FC<DefiScreenProps> = ({navigation}) => {
               <View>
                 <CashuWalletView></CashuWalletView>
               </View>
+            )}
+
+            {selectedTab == SelectedTab.BRIDGE_LAYERSWAP && (
+              <>
+                <LayerswapView />
+              </>
             )}
           </SafeAreaView>
         </KeyboardAvoidingView>

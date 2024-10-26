@@ -8,4 +8,7 @@ export default ThemedStyleSheet((theme) => ({
     marginBottom: Spacing.large,
     borderRadius: 16,
   },
+  hashtagColor: {
+    color: theme.colors.primary,
+  },
 }));

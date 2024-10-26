@@ -69,6 +69,14 @@ export default ThemedStyleSheet((theme) => ({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  hashTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  footerContent: {
+    gap: 10,
+  },
   footerComments: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,7 +1,7 @@
 // import { useAuth } from '../../../store/auth';
 import {useAuth, useNostrContext} from 'afk_nostr_sdk';
 import React, {useEffect, useMemo} from 'react';
-import {Pressable, Text, View, Image, ScrollView} from 'react-native';
+import {Image, Pressable, ScrollView, Text, View} from 'react-native';
 
 import {Icon} from '../../../components/Icon';
 import {useStyles, useTheme, useWindowDimensions} from '../../../hooks';
@@ -22,7 +22,11 @@ const Sidebar = ({navigation}: SidebarInterface) => {
   };
 
   const handleAuth = () => {
-    navigation.navigate('Auth');
+    navigation.navigate('Login');
+  };
+
+  const handleWallet = () => {
+    navigation.navigate('Wallet');
   };
   const theme = useTheme();
   // const handleNavigateHome = () => {
@@ -61,7 +65,9 @@ const Sidebar = ({navigation}: SidebarInterface) => {
   return (
     <ScrollView style={styles.sidebar}>
       <View style={styles.rowContainer}>
-        { isDesktop && <Image style={styles.logo} source={require('./../../../assets/pepe-logo.png')} />}
+        {isDesktop && (
+          <Image style={styles.logo} source={require('./../../../assets/pepe-logo.png')} />
+        )}
         <Text style={styles.sidebarText}>AFK</Text>
       </View>
       {/* 
@@ -106,6 +112,11 @@ const Sidebar = ({navigation}: SidebarInterface) => {
         <Text style={styles.textItem}>DeFi</Text>
       </Pressable>
 
+      <Pressable onPress={handleWallet} style={styles.item}>
+        <Icon name="WalletIcon" size={24} />
+        <Text style={styles.textItem}>Wallet</Text>
+      </Pressable>
+
       {publicKey && (
         <Pressable onPress={handleNavigateProfile} style={styles.item}>
           <Icon name="UserIcon" size={24} />
@@ -115,7 +126,7 @@ const Sidebar = ({navigation}: SidebarInterface) => {
 
       {!publicKey && !ndk?.ndk?.signer && (
         <Pressable onPress={handleAuth} style={styles.item}>
-          <Icon name="UserIcon" size={24} />
+          <Icon name="UserPlusIcon" size={24} />
           <Text style={styles.textItem}>Login</Text>
         </Pressable>
       )}

@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { generateRandomBytes32 } from '@walletconnect/utils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  type SIWECreateMessageArgs,
+  type SIWEVerifyMessageArgs,
   createSIWEConfig,
   formatMessage,
-  type SIWEVerifyMessageArgs,
-  type SIWECreateMessageArgs
 } from '@reown/appkit-siwe-react-native';
-import { chains } from './WagmiUtils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {generateRandomBytes32} from '@walletconnect/utils';
+
+import {chains} from './WagmiUtils';
 
 const LOGGED_IN_KEY = '@appkit/logged_in';
 const SESSION_KEY = '@appkit/session';
@@ -25,12 +26,12 @@ export const siweConfig = createSIWEConfig({
     return {
       domain: 'your.bundle.id', //your bundle id or app id
       uri: 'redirect://', // your redirect uri
-      chains: chains.map(chain => chain.id),
+      chains: chains.map((chain) => chain.id),
       statement: 'Please sign with your account',
-      iat: new Date().toISOString()
+      iat: new Date().toISOString(),
     };
   },
-  createMessage: ({ address, ...args }: SIWECreateMessageArgs): string => {
+  createMessage: ({address, ...args}: SIWECreateMessageArgs): string => {
     // Method for generating an EIP-4361-compatible message.
     return formatMessage(args, address);
   },
@@ -56,7 +57,7 @@ export const siweConfig = createSIWEConfig({
     return null;
   },
 
-  verifyMessage: async ({ message, signature, cacao }: SIWEVerifyMessageArgs): Promise<boolean> => {
+  verifyMessage: async ({message, signature, cacao}: SIWEVerifyMessageArgs): Promise<boolean> => {
     // This function ensures the message is valid,
     // has not been tampered with, and has been appropriately
     // signed by the wallet address.
@@ -71,7 +72,7 @@ export const siweConfig = createSIWEConfig({
     const address = message.split('your Ethereum account:\n')[1].split('\n')[0];
     const chainId = message.split('Chain ID: ')[1].split('\n')[0];
 
-    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify({ address, chainId }));
+    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify({address, chainId}));
 
     return true;
   },
@@ -80,5 +81,5 @@ export const siweConfig = createSIWEConfig({
     await AsyncStorage.removeItem(LOGGED_IN_KEY);
 
     return true;
-  }
+  },
 });

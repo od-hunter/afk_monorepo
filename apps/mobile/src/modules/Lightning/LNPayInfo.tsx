@@ -1,13 +1,15 @@
 import '../../../applyGlobalPolyfills';
-import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
-import { Text, TextInput } from 'react-native';
-import { useStyles, useTheme } from '../../hooks';
-import stylesheet from './styles';
-import { Input } from '../../components';
-import { useToast } from '../../hooks/modals';
+
 import * as Clipboard from 'expo-clipboard';
-import { CopyIconStack } from '../../assets/icons';
+import React from 'react';
+import {TouchableOpacity, View} from 'react-native';
+import {Text, TextInput} from 'react-native';
+
+import {CopyIconStack} from '../../assets/icons';
+import {Input} from '../../components';
+import {useStyles, useTheme} from '../../hooks';
+import {useToast} from '../../hooks/modals';
+import stylesheet from './styles';
 
 export function LNPayInfo({
   setIsInvoiceModalVisible,
@@ -17,7 +19,7 @@ export function LNPayInfo({
   invoiceMemo,
   isLoading,
   generateInvoice,
-  invoiceGenerated
+  invoiceGenerated,
 }: {
   setIsInvoiceModalVisible: any;
   invoiceMemo: string;
@@ -27,20 +29,17 @@ export function LNPayInfo({
   isLoading?: boolean;
   generateInvoice: (invoiceAmount?: string) => void;
   invoiceGenerated?: string;
-
 }) {
   const styles = useStyles(stylesheet);
-  console.log("invoiceGenerated", invoiceGenerated)
-  const { showToast } = useToast();
-  const { theme } = useTheme();
+  console.log('invoiceGenerated', invoiceGenerated);
+  const {showToast} = useToast();
+  const {theme} = useTheme();
 
   const handleCopyInvoice = async () => {
-
-    if(invoiceGenerated) {
+    if (invoiceGenerated) {
       await Clipboard.setStringAsync(invoiceGenerated);
-      showToast({ type: 'info', title: 'Invoice copied to the clipboard' });
+      showToast({type: 'info', title: 'Invoice copied to the clipboard'});
     }
-
   };
 
   return (
@@ -65,8 +64,7 @@ export function LNPayInfo({
           />
         </View>
 
-
-        {invoiceGenerated &&
+        {invoiceGenerated && (
           <Input
             value={invoiceGenerated}
             editable={false}
@@ -81,10 +79,8 @@ export function LNPayInfo({
               </TouchableOpacity>
             }
           />
+        )}
 
-        }
-
-      
         <TouchableOpacity
           style={[styles.button, isLoading && styles.disabledButton]}
           onPress={() => generateInvoice(invoiceAmount)}

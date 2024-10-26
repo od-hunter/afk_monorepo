@@ -1,16 +1,16 @@
-import { useNavigation } from '@react-navigation/native';
-import { useAuth, useCashu, useCashuStore, useNip07Extension } from 'afk_nostr_sdk';
-import { canUseBiometricAuthentication } from 'expo-secure-store';
-import { useEffect, useState } from 'react';
-import { Platform, View } from 'react-native';
+import {deriveSeedFromMnemonic} from '@cashu/cashu-ts';
+import {useAuth, useCashu, useCashuStore, useNip07Extension} from 'afk_nostr_sdk';
+import {canUseBiometricAuthentication} from 'expo-secure-store';
+import {useEffect, useState} from 'react';
+import {Platform, View} from 'react-native';
 
-import { LockIcon } from '../../assets/icons';
-import { Button, Input, TextButton } from '../../components';
-import { useTheme } from '../../hooks';
-import { useDialog, useToast } from '../../hooks/modals';
-import { Auth } from '../../modules/Auth';
-import { AuthLoginScreenProps, MainStackNavigationProps } from '../../types';
-import { getPublicKeyFromSecret } from '../../utils/keypair';
+import {LockIcon} from '../../assets/icons';
+import {Button, Input, TextButton} from '../../components';
+import {useTheme} from '../../hooks';
+import {useDialog, useToast} from '../../hooks/modals';
+import {Auth} from '../../modules/Auth';
+import {MainStackNavigationProps} from '../../types';
+import {getPublicKeyFromSecret} from '../../utils/keypair';
 import {
   retrieveAndDecryptCashuMnemonic,
   retrieveAndDecryptCashuSeed,
@@ -20,23 +20,34 @@ import {
   storeCashuMnemonic,
   storeCashuSeed,
 } from '../../utils/storage';
-import { deriveSeedFromMnemonic } from '@cashu/cashu-ts';
-import ConnectWalletScreen from '../connectWallet/ConnectWalletscreens';
-export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
-  const { theme } = useTheme();
+
+interface ILoginNostr {
+  isNavigationAfterLogin?: boolean;
+  navigationProps?: MainStackNavigationProps | any;
+  handleSuccess?: () => void;
+  handleSuccessCreateAccount?: () => void;
+}
+export const LoginNostrModule: React.FC<ILoginNostr> = ({
+  isNavigationAfterLogin,
+  navigationProps,
+  handleSuccess,
+  handleSuccessCreateAccount,
+}: ILoginNostr) => {
+  const {theme} = useTheme();
   const setAuth = useAuth((state) => state.setAuth);
+  const publicKey = useAuth((state) => state.publicKey);
 
-
+  // const navigation = useNavigation<MainStackNavigationProps>()
   // const { setIsSeedCashuStorage } = useAuth()
-  const { setIsSeedCashuStorage, setSeed, setMnemonic } = useCashuStore()
+  const {setIsSeedCashuStorage, setSeed, setMnemonic} = useCashuStore();
   const [password, setPassword] = useState('');
 
-  const { showToast } = useToast();
-  const { showDialog, hideDialog } = useDialog();
-  const { getPublicKey } = useNip07Extension();
-  const { generateMnemonic } = useCashu()
+  const {showToast} = useToast();
+  const {showDialog, hideDialog} = useDialog();
+  const {getPublicKey} = useNip07Extension();
+  const {generateMnemonic} = useCashu();
 
-  const navigationMain = useNavigation<MainStackNavigationProps>();
+  // const navigationMain = useNavigation<MainStackNavigationProps>();
 
   useEffect(() => {
     (async () => {
@@ -51,13 +62,13 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!password) {
-      showToast({ type: 'error', title: 'Password is required' });
+      showToast({type: 'error', title: 'Password is required'});
       return;
     }
 
     const privateKey = await retrieveAndDecryptPrivateKey(password);
     if (!privateKey || privateKey.length !== 32) {
-      showToast({ type: 'error', title: 'Invalid password' });
+      showToast({type: 'error', title: 'Invalid password'});
       return;
     }
     const privateKeyHex = privateKey.toString('hex');
@@ -66,54 +77,52 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
     const publicKey = getPublicKeyFromSecret(privateKeyHex);
 
     if (publicKey !== storedPublicKey) {
-      showToast({ type: 'error', title: 'Invalid password' });
+      showToast({type: 'error', title: 'Invalid password'});
       return;
     }
 
-    const mnemonicSaved = await retrieveAndDecryptCashuMnemonic(password)
+    const mnemonicSaved = await retrieveAndDecryptCashuMnemonic(password);
     // console.log("mnemonicSaved", mnemonicSaved)
-    setIsSeedCashuStorage(true)
+    setIsSeedCashuStorage(true);
     setAuth(publicKey, privateKeyHex);
 
     try {
       if (!mnemonicSaved) {
-        const mnemonic = await generateMnemonic()
-        console.log("mnemonic", mnemonic)
-        await storeCashuMnemonic(mnemonic, password)
-        const seed = await deriveSeedFromMnemonic(mnemonic)
+        const mnemonic = await generateMnemonic();
+        await storeCashuMnemonic(mnemonic, password);
+        const seed = await deriveSeedFromMnemonic(mnemonic);
 
-        const seedHex = Buffer.from(seed).toString("hex")
+        const seedHex = Buffer.from(seed).toString('hex');
 
-        await storeCashuSeed(seedHex, password)
+        await storeCashuSeed(seedHex, password);
 
-        setMnemonic(mnemonic)
-        setSeed(seed)
-        setIsSeedCashuStorage(true)
+        setMnemonic(mnemonic);
+        setSeed(seed);
+        setIsSeedCashuStorage(true);
       }
 
-      const seedSaved = await retrieveAndDecryptCashuSeed(password)
+      const seedSaved = await retrieveAndDecryptCashuSeed(password);
 
       if (!seedSaved && mnemonicSaved) {
-        const mnemonic = Buffer.from(mnemonicSaved).toString("hex")
-        console.log("mnemonic", mnemonic)
+        const mnemonic = Buffer.from(mnemonicSaved).toString('hex');
+        console.log('mnemonic', mnemonic);
 
-        const seed = await deriveSeedFromMnemonic(mnemonic)
-        const seedHex = Buffer.from(seed).toString("hex")
-        console.log("seedHex", seedHex)
+        const seed = await deriveSeedFromMnemonic(mnemonic);
+        const seedHex = Buffer.from(seed).toString('hex');
+        console.log('seedHex', seedHex);
 
-        await storeCashuSeed(seedHex, password)
-        setMnemonic(mnemonic)
-        setSeed(seed)
+        await storeCashuSeed(seedHex, password);
+        setMnemonic(mnemonic);
+        setSeed(seed);
       }
     } catch (e) {
-      console.log("Error mnemonic", e)
+      console.log('Error mnemonic', e);
     }
-
-
-    if (publicKey && privateKeyHex) {
-      // navigationMain.navigate("Home", {screen:"Feed"});
-      // navigationMain.push("Home", {screen:"Feed"});
-      navigationMain.navigate('Feed');
+    if (handleSuccess) {
+      handleSuccess();
+    }
+    if (publicKey && privateKeyHex && isNavigationAfterLogin && navigationProps) {
+      navigationProps?.navigate('Feed');
     }
   };
 
@@ -127,11 +136,11 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
           type: 'primary',
           label: 'Continue',
           onPress: () => {
-            navigation.navigate('CreateAccount');
+            navigationProps?.navigate('CreateAccount');
             hideDialog();
           },
         },
-        { type: 'default', label: 'Cancel', onPress: hideDialog },
+        {type: 'default', label: 'Cancel', onPress: hideDialog},
       ],
     });
   };
@@ -146,11 +155,11 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
           type: 'primary',
           label: 'Continue',
           onPress: () => {
-            navigation.navigate('ImportKeys');
+            navigationProps?.navigate('ImportKeys');
             hideDialog();
           },
         },
-        { type: 'default', label: 'Cancel', onPress: hideDialog },
+        {type: 'default', label: 'Cancel', onPress: hideDialog},
       ],
     });
   };
@@ -163,13 +172,19 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
         {
           type: 'primary',
           label: 'Continue',
-          onPress: () => {
-            getPublicKey();
+          onPress: async () => {
+            const publicKey = await getPublicKey();
             // navigation.navigate('ImportKeys');
-            // hideDialog();
+            hideDialog();
+            if (handleSuccess) {
+              handleSuccess();
+            }
+            if (publicKey && navigationProps) {
+              navigationProps.navigate('Profile', {publicKey});
+            }
           },
         },
-        { type: 'default', label: 'Cancel', onPress: hideDialog },
+        {type: 'default', label: 'Cancel', onPress: hideDialog},
       ],
     });
   };
@@ -195,9 +210,7 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
   //   // });
   // };
 
-
   return (
-
     <Auth title="Login">
       <Input
         left={<LockIcon color={theme.colors.primary} />}
@@ -209,7 +222,7 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
 
       <Button
         block
-        style={{ width: 'auto', maxWidth: 130 }}
+        style={{width: 'auto', maxWidth: 130}}
         variant="secondary"
         disabled={!password?.length}
         onPress={handleLogin}
@@ -217,7 +230,7 @@ export const Login: React.FC<AuthLoginScreenProps> = ({ navigation }) => {
         Login
       </Button>
 
-      {/* <TextButton onPress={handleCreateAccount}>Create Account</TextButton> */}
+      <TextButton onPress={handleCreateAccount}>Create Account</TextButton>
       {/* <ConnectWalletScreen /> */}
       <View
         style={

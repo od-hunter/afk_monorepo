@@ -1,17 +1,17 @@
 // import {useAuth} from '../../store/auth';
+import {useNavigation} from '@react-navigation/native';
 import {useAuth} from 'afk_nostr_sdk';
 import * as Clipboard from 'expo-clipboard';
 import {TouchableOpacity, View} from 'react-native';
 
-import {CopyIconStack} from '../../assets/icons';
-import {InfoIcon} from '../../assets/icons';
-import {Button, Input, Text} from '../../components';
-import {useStyles, useTheme} from '../../hooks';
-import {useDialog, useToast} from '../../hooks/modals';
-import {Auth} from '../../modules/Auth';
-import {AuthSaveKeysScreenProps, MainStackNavigationProps} from '../../types';
+import {CopyIconStack} from '../../../assets/icons';
+import {InfoIcon} from '../../../assets/icons';
+import {Button, Input, Text} from '../../../components';
+import {useStyles, useTheme} from '../../../hooks';
+import {useDialog, useToast} from '../../../hooks/modals';
+import {Auth} from '../../../modules/Auth';
+import {AuthSaveKeysScreenProps, MainStackNavigationProps} from '../../../types';
 import stylesheet from './styles';
-import { useNavigation } from '@react-navigation/native';
 
 export const SaveKeys: React.FC<AuthSaveKeysScreenProps> = ({route}) => {
   const {privateKey, publicKey} = route.params;
@@ -22,7 +22,8 @@ export const SaveKeys: React.FC<AuthSaveKeysScreenProps> = ({route}) => {
   const {showToast} = useToast();
   const {showDialog, hideDialog} = useDialog();
 
-  const navigation = useNavigation<MainStackNavigationProps>()
+  const navigation = useNavigation<MainStackNavigationProps>();
+  // const navigation = useNavigation();
   const handleCopy = async (type: 'privateKey' | 'publicKey') => {
     await Clipboard.setStringAsync(type === 'privateKey' ? privateKey : publicKey);
     showToast({type: 'info', title: 'Copied to clipboard'});
@@ -34,21 +35,21 @@ export const SaveKeys: React.FC<AuthSaveKeysScreenProps> = ({route}) => {
       description: 'Please send your Nostr private key somewhere safe.',
       buttons: [
         {
-          type: "secondary",
+          type: 'secondary',
           label: 'Copy private key',
           onPress: async () => {
-            handleCopy("privateKey")
+            handleCopy('privateKey');
             hideDialog();
           },
         },
         {
           type: 'primary',
-          label: "Yes",
+          label: 'Yes',
           onPress: async () => {
             setAuth(publicKey, privateKey);
             hideDialog();
-            // navigation.push("Feed")
-            navigation.push("Profile", {publicKey})
+            // navigation.navigate("Feed")
+            navigation.navigate('Profile', {publicKey});
           },
         },
         {
@@ -58,7 +59,6 @@ export const SaveKeys: React.FC<AuthSaveKeysScreenProps> = ({route}) => {
         },
       ],
     });
-
   };
 
   return (

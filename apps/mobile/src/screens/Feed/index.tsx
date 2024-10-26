@@ -10,6 +10,7 @@ import SearchComponent from '../../components/search';
 import {useStyles, useTheme} from '../../hooks';
 import {ChannelComponent} from '../../modules/ChannelCard';
 import {PostCard} from '../../modules/PostCard';
+import {VideoPostCard} from '../../modules/VideoPostCard';
 import {FeedScreenProps} from '../../types';
 import stylesheet from './styles';
 
@@ -27,6 +28,8 @@ export const Feed: React.FC<FeedScreenProps> = ({navigation}) => {
     NDKKind.GroupChat,
     NDKKind.ChannelMessage,
     NDKKind.Metadata,
+    NDKKind.VerticalVideo,
+    NDKKind.HorizontalVideo,
   ]);
 
   const contacts = useContacts({authors: [publicKey]});
@@ -47,6 +50,8 @@ export const Feed: React.FC<FeedScreenProps> = ({navigation}) => {
     if (!notes.data?.pages) return [];
 
     const flattenedPages = notes.data.pages.flat();
+
+    console.log(flattenedPages, 'note pages');
     if (!search || search.length === 0) {
       setFeedData(flattenedPages as any);
       return flattenedPages;
@@ -56,22 +61,22 @@ export const Feed: React.FC<FeedScreenProps> = ({navigation}) => {
     const filtered = flattenedPages.filter((item) =>
       item?.content?.toLowerCase().includes(searchLower),
     );
-    console.log('search result is => ', filtered);
+    // console.log('search result is => ', filtered);
     return filtered;
   }, [notes.data?.pages, search]);
   // Filter notes based on the search query
   useEffect(() => {
     const filtered = filteredNotes();
     setFeedData(filtered as any);
-    console.log('feed data is => ', filtered);
+    // console.log('feed data is => ', filtered);
   }, [search, notes.data?.pages]);
 
   useEffect(() => {
     console.log(activeSortBy, 'contacts', contacts);
-    if (activeSortBy === '2') {
+    if (activeSortBy === '2' && contacts && contacts?.data) {
       const forYouNotes =
         notes.data?.pages.flat().filter((item) => item?.pubkey === contacts?.data[0]) ?? [];
-      console.log('something', forYouNotes);
+      // console.log('something', forYouNotes);
       setFeedData(forYouNotes as any);
     }
   }, [activeSortBy]);
@@ -125,6 +130,8 @@ export const Feed: React.FC<FeedScreenProps> = ({navigation}) => {
             return <ChannelComponent event={item} />;
           } else if (item.kind === NDKKind.ChannelMessage) {
             return <PostCard event={item} />;
+          } else if (item.kind === NDKKind.VerticalVideo || item.kind === NDKKind.HorizontalVideo) {
+            return <VideoPostCard event={item} />;
           } else if (item.kind === NDKKind.Text) {
             return <PostCard event={item} />;
           }

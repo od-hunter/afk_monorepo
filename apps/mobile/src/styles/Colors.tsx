@@ -18,11 +18,31 @@ export const LightTheme = {
     ...CommonColors,
     red: '#EC796B',
 
+    badge: '#F2F2F2',
+    badgeText: '#333333',
+    badgeBorder: '#CCCCCC',
+
     messageCard: '#FFFFFF',
     messageCardText: '#14142C',
 
     messageReplyCard: '#E0E0E0',
     messageReplyCardText: '#14142C',
+
+    //Swap
+    swap_background: '#F4F9FF',
+    swap_surface: '#FFFFFF',
+    swap_cardBackground: '#F0F0F0',
+    swap_inputBackground: '#FFFFFF',
+    swap_text: '#14142C',
+    swap_text_dim: '#14142C',
+    swap_textSecondary: '#6B6B8C',
+    swap_primary: '#4FA89B',
+    swap_inputText: '#14142C',
+    swap_inputBorder: '#DDDDEE',
+    swap_inputPlaceholder: '#A1A1C7',
+    swap_buttonBackground: '#4FA89B',
+    swap_buttonText: '#FFFFFF',
+    swap_divider: '#e4e4e7',
 
     // primary: '#EC796B',
     primary: '#4FA89B',
@@ -79,11 +99,31 @@ export const DarkTheme = {
     ...CommonColors,
     red: '#EC796B',
 
+    badge: '#2C2C2C',
+    badgeText: '#B3B3B3',
+    badgeBorder: '#444444',
+
     messageCard: '#2C2C2C',
     messageCardText: '#FFFFFF',
 
     messageReplyCard: '#1F1F1F',
     messageReplyCardText: '#E0E0E0',
+
+    //Swap
+    swap_background: '#1A1A1A',
+    swap_surface: '#242424',
+    swap_cardBackground: '#2C2C2C',
+    swap_inputBackground: '#1F1F1F',
+    swap_text: '#FFFFFF',
+    swap_text_dim: '#eeeeee',
+    swap_textSecondary: '#A1A1C7',
+    swap_primary: '#4FA89B',
+    swap_inputText: '#FFFFFF',
+    swap_inputBorder: '#3A3A3A',
+    swap_inputPlaceholder: '#6B6B8C',
+    swap_buttonBackground: '#4FA89B',
+    swap_buttonText: '#FFFFFF',
+    swap_divider: '#3A3A3A',
 
     // primary: '#EC796B',
     primary: '#4FA89B',

@@ -1,6 +1,6 @@
-import { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk';
-import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
+import {NDKEvent, NDKKind} from '@nostr-dev-kit/ndk';
+import {useNavigation} from '@react-navigation/native';
+import {useQueryClient} from '@tanstack/react-query';
 import {
   useBookmark,
   useProfile,
@@ -10,9 +10,10 @@ import {
   useRepost,
 } from 'afk_nostr_sdk';
 // import { useAuth } from '../../store/auth';
-import { useAuth } from 'afk_nostr_sdk';
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, View } from 'react-native';
+import {useAuth} from 'afk_nostr_sdk';
+import {useMemo, useState} from 'react';
+import React from 'react';
+import {ActivityIndicator, Image, Pressable, View} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -22,13 +23,15 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { CommentIcon, LikeFillIcon, LikeIcon, RepostIcon } from '../../assets/icons';
-import { Avatar, Icon, IconButton, Menu, Text } from '../../components';
-import { useNostrAuth, useStyles, useTheme } from '../../hooks';
-import { useTipModal, useToast } from '../../hooks/modals';
-import { MainStackNavigationProps } from '../../types';
-import { getImageRatio, shortenPubkey } from '../../utils/helpers';
-import { getElapsedTimeStringFull } from '../../utils/timestamp';
+import {CommentIcon, LikeFillIcon, LikeIcon, RepostIcon} from '../../assets/icons';
+import {Avatar, Icon, IconButton, Menu, Text} from '../../components';
+import Badge from '../../components/Badge';
+import {useNostrAuth, useStyles, useTheme} from '../../hooks';
+import {useTipModal, useToast} from '../../hooks/modals';
+import {MainStackNavigationProps} from '../../types';
+import {getImageRatio, removeHashFn, shortenPubkey} from '../../utils/helpers';
+import {getElapsedTimeStringFull} from '../../utils/timestamp';
+import {ContentWithClickableHashtags} from '../PostCard';
 import stylesheet from './styles';
 
 export type PostProps = {
@@ -48,25 +51,25 @@ export const Post: React.FC<PostProps> = ({
 }) => {
   const repostedEvent = repostedEventProps ?? undefined;
 
-  const { theme } = useTheme();
+  const {theme} = useTheme();
   const styles = useStyles(stylesheet);
-  const { showToast } = useToast();
+  const {showToast} = useToast();
 
   const navigation = useNavigation<MainStackNavigationProps>();
 
   const [dimensionsMedia, setMediaDimensions] = useState([250, 300]);
-  const { publicKey } = useAuth();
-  const { show: showTipModal } = useTipModal();
-  const { data: profile } = useProfile({ publicKey: event?.pubkey });
-  const reactions = useReactions({ noteId: event?.id });
-  const userReaction = useReactions({ authors: [publicKey], noteId: event?.id });
-  const comments = useReplyNotes({ noteId: event?.id });
+  const {publicKey} = useAuth();
+  const {show: showTipModal} = useTipModal();
+  const {data: profile} = useProfile({publicKey: event?.pubkey});
+  const reactions = useReactions({noteId: event?.id});
+  const userReaction = useReactions({authors: [publicKey], noteId: event?.id});
+  const comments = useReplyNotes({noteId: event?.id});
   const react = useReact();
   const queryClient = useQueryClient();
-  const repostMutation = useRepost({ event });
-  const { bookmarkNote, removeBookmark } = useBookmark(publicKey);
+  const repostMutation = useRepost({event});
+  const {bookmarkNote, removeBookmark} = useBookmark(publicKey);
   const [noteBookmarked, setNoteBookmarked] = useState(isBookmarked);
-  const { handleCheckNostrAndSendConnectDialog } = useNostrAuth()
+  const {handleCheckNostrAndSendConnectDialog} = useNostrAuth();
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -93,6 +96,10 @@ export const Post: React.FC<PostProps> = ({
     return likesCount - dislikesCount;
   }, [reactions.data]);
 
+  const hashTags = useMemo(() => {
+    return event?.tags?.filter((tag) => tag[0] === 't').map((tag) => tag[1]) || [];
+  }, [event?.tags]);
+
   const postSource = useMemo(() => {
     if (!event?.tags) return;
 
@@ -103,38 +110,38 @@ export const Post: React.FC<PostProps> = ({
       dimensions = imageTag[2].split('x').map(Number);
       setMediaDimensions(dimensions);
     }
-    return { uri: imageTag[1], width: dimensions[0], height: dimensions[1] };
+    return {uri: imageTag[1], width: dimensions[0], height: dimensions[1]};
   }, [event?.tags]);
 
   const animatedIconStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{scale: scale.value}],
   }));
 
   const handleProfilePress = (userId?: string) => {
     if (userId) {
-      navigation.navigate('Profile', { publicKey: userId });
+      navigation.navigate('Profile', {publicKey: userId});
     }
   };
 
   const handleNavigateToPostDetails = () => {
     if (!event?.id) return;
-    navigation.navigate('PostDetail', { postId: event?.id, post: event });
+    navigation.navigate('PostDetail', {postId: event?.id, post: event});
   };
 
   const toggleLike = async () => {
     if (!event?.id) return;
 
-    await handleCheckNostrAndSendConnectDialog()
+    await handleCheckNostrAndSendConnectDialog();
 
     await react.mutateAsync(
-      { event, type: isLiked ? 'dislike' : 'like' },
+      {event, type: isLiked ? 'dislike' : 'like'},
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['reactions', event?.id] });
+          queryClient.invalidateQueries({queryKey: ['reactions', event?.id]});
 
           scale.value = withSequence(
-            withTiming(1.5, { duration: 100, easing: Easing.out(Easing.ease) }),
-            withSpring(1, { damping: 6, stiffness: 200 }),
+            withTiming(1.5, {duration: 100, easing: Easing.out(Easing.ease)}),
+            withSpring(1, {damping: 6, stiffness: 200}),
           );
         },
       },
@@ -144,40 +151,45 @@ export const Post: React.FC<PostProps> = ({
   const handleRepost = async () => {
     if (!event) return;
     try {
-      await handleCheckNostrAndSendConnectDialog()
+      await handleCheckNostrAndSendConnectDialog();
 
       await repostMutation.mutateAsync();
-      showToast({ title: 'Post reposted successfully', type: 'success' });
+      showToast({title: 'Post reposted successfully', type: 'success'});
     } catch (error) {
       console.error('Repost error:', error);
-      showToast({ title: 'Failed to repost', type: 'error' });
+      showToast({title: 'Failed to repost', type: 'error'});
     }
   };
 
   const handleBookmark = async () => {
     if (!event) return;
     try {
-      await handleCheckNostrAndSendConnectDialog()
+      await handleCheckNostrAndSendConnectDialog();
 
       if (noteBookmarked) {
-        await removeBookmark({ eventId: event.id });
-        showToast({ title: 'Post removed from bookmarks', type: 'success' });
+        await removeBookmark({eventId: event.id});
+        showToast({title: 'Post removed from bookmarks', type: 'success'});
       } else {
-        await bookmarkNote({ event });
-        showToast({ title: 'Post bookmarked successfully', type: 'success' });
+        await bookmarkNote({event});
+        showToast({title: 'Post bookmarked successfully', type: 'success'});
       }
       // Invalidate the queries to refetch data
-      queryClient.invalidateQueries({ queryKey: ['search', { authors: [event.pubkey] }] });
-      queryClient.invalidateQueries({ queryKey: ['bookmarksWithNotes', event.pubkey] });
+      queryClient.invalidateQueries({queryKey: ['search', {authors: [event.pubkey]}]});
+      queryClient.invalidateQueries({queryKey: ['bookmarksWithNotes', event.pubkey]});
       setNoteBookmarked((prev) => !prev);
     } catch (error) {
       console.error('Bookmark error:', error);
-      showToast({ title: 'Failed to bookmark', type: 'error' });
+      showToast({title: 'Failed to bookmark', type: 'error'});
     }
   };
 
   const content = event?.content || '';
   const truncatedContent = content.length > 200 ? `${content.slice(0, 200)}...` : content;
+
+  const handleHashtagPress = (hashtag: string) => {
+    const tag = removeHashFn(hashtag);
+    navigation.navigate('Tags', {tagName: tag});
+  };
 
   return (
     <View style={styles.container}>
@@ -196,7 +208,7 @@ export const Post: React.FC<PostProps> = ({
             <Avatar
               size={asComment ? 40 : 50}
               source={
-                profile?.image ? { uri: profile.image } : require('../../assets/degen-logo.png')
+                profile?.image ? {uri: profile.image} : require('../../assets/degen-logo.png')
               }
             />
           </Pressable>
@@ -261,9 +273,10 @@ export const Post: React.FC<PostProps> = ({
 
       <View style={styles.content}>
         <Pressable onPress={handleNavigateToPostDetails}>
-          <Text color="textStrong" fontSize={13} lineHeight={20}>
-            {isContentExpanded ? content : truncatedContent}
-          </Text>
+          <ContentWithClickableHashtags
+            content={isContentExpanded ? content : truncatedContent}
+            onHashtagPress={handleHashtagPress}
+          />
 
           {content.length > 200 && (
             <Pressable onPress={toggleExpandedContent}>
@@ -287,72 +300,83 @@ export const Post: React.FC<PostProps> = ({
       </View>
 
       {!asComment && (
-        <View style={styles.footer}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'baseline',
-              gap: 10,
-            }}
-          >
-            <Pressable onPress={handleNavigateToPostDetails}>
-              <View style={styles.footerComments}>
-                <CommentIcon height={20} color={theme.colors.textSecondary} />
-
-                <Text color="textSecondary" fontSize={11} lineHeight={16}>
-                  {comments.data?.pages.flat().length} comments
-                </Text>
-              </View>
-            </Pressable>
-
-            <Pressable
-              style={{ marginHorizontal: 3 }}
-              onPress={() => {
-                if (!event) return;
-                showTipModal(event);
-              }}
-            >
-              <Icon name="CoinIcon" size={20} title="Tip" />
-            </Pressable>
-
-            <Pressable
-              style={{ marginHorizontal: 3 }}
-              onPress={handleRepost}
-              disabled={repostMutation.isPending}
-            >
-              <Icon name="RepostIcon" size={20} title="Repost" />
-              {repostMutation.isPending && <ActivityIndicator size="small" />}
-            </Pressable>
-
-            <Pressable style={{ marginHorizontal: 3 }} onPress={handleBookmark}>
-              <Icon
-                name={noteBookmarked ? 'BookmarkFillIcon' : 'BookmarkIcon'}
-                size={20}
-                title={noteBookmarked ? 'Bookmarked' : 'Bookmark'}
-              />
-            </Pressable>
+        <View>
+          <View style={styles.hashTagsContainer}>
+            {hashTags.map((hashTag, index) => (
+              <Pressable onPress={() => handleHashtagPress(hashTag)} key={index}>
+                <Badge value={`#${hashTag}`} />
+              </Pressable>
+            ))}
           </View>
+          <View style={styles.footer}>
+            <View style={styles.footerContent}>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'baseline',
+                  gap: 10,
+                }}
+              >
+                <Pressable onPress={handleNavigateToPostDetails}>
+                  <View style={styles.footerComments}>
+                    <CommentIcon height={20} color={theme.colors.textSecondary} />
 
-          <Menu
-            open={menuOpen}
-            onClose={() => setMenuOpen(false)}
-            handle={
-              <IconButton icon="MoreHorizontalIcon" size={20} onPress={() => setMenuOpen(true)} />
-            }
-          >
-            <Menu.Item label="Share" icon="ShareIcon" />
-            <Menu.Item
-              label={profile?.username ? `Tip @${profile.username}` : 'Tip'}
-              icon="CoinIcon"
-              onPress={() => {
-                if (!event) return;
+                    <Text color="textSecondary" fontSize={11} lineHeight={16}>
+                      {comments.data?.pages.flat().length} comments
+                    </Text>
+                  </View>
+                </Pressable>
 
-                showTipModal(event);
-                setMenuOpen(false);
-              }}
-            />
-          </Menu>
+                <Pressable
+                  style={{marginHorizontal: 3}}
+                  onPress={() => {
+                    if (!event) return;
+                    showTipModal(event);
+                  }}
+                >
+                  <Icon name="CoinIcon" size={20} title="Tip" />
+                </Pressable>
+
+                <Pressable
+                  style={{marginHorizontal: 3}}
+                  onPress={handleRepost}
+                  disabled={repostMutation.isPending}
+                >
+                  <Icon name="RepostIcon" size={20} title="Repost" />
+                  {repostMutation.isPending && <ActivityIndicator size="small" />}
+                </Pressable>
+
+                <Pressable style={{marginHorizontal: 3}} onPress={handleBookmark}>
+                  <Icon
+                    name={noteBookmarked ? 'BookmarkFillIcon' : 'BookmarkIcon'}
+                    size={20}
+                    title={noteBookmarked ? 'Bookmarked' : 'Bookmark'}
+                  />
+                </Pressable>
+              </View>
+            </View>
+
+            <Menu
+              open={menuOpen}
+              onClose={() => setMenuOpen(false)}
+              handle={
+                <IconButton icon="MoreHorizontalIcon" size={20} onPress={() => setMenuOpen(true)} />
+              }
+            >
+              <Menu.Item label="Share" icon="ShareIcon" />
+              <Menu.Item
+                label={profile?.username ? `Tip @${profile.username}` : 'Tip'}
+                icon="CoinIcon"
+                onPress={() => {
+                  if (!event) return;
+
+                  showTipModal(event);
+                  setMenuOpen(false);
+                }}
+              />
+            </Menu>
+          </View>
         </View>
       )}
     </View>

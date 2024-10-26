@@ -35,7 +35,14 @@ export enum SelectedTab {
   STARKNET_PORTFOLIO,
   SWAP_AVNU,
   TOKEN_STATS,
-  USER_SHARE
+  USER_SHARE,
+  DYNAMIC_GENERAL,
+  GENERATE_INTERNAL_WALLET,
+  BRIDGE_LAYERSWAP,
+  STRIPE_SCREEN,
+  ONRAMP_OFFRAMP,
+  PAY_WALLET,
+  WALLET_INTERNAL,
 }
 
 export const TABS_TIP_LIST: {screen?: string; title: string; tab: SelectedTab}[] = [
@@ -213,6 +220,12 @@ export const TABS_DEFI: {screen?: string; title: string; tab: SelectedTab}[] = [
     tab: SelectedTab.SWAP_AVNU,
   },
 
+  {
+    title: 'Bridge',
+    screen: 'Bridge',
+    tab: SelectedTab.BRIDGE_LAYERSWAP,
+  },
+
   // {
   //   title: 'BTC Bridge',
   //   screen: 'BTCBridge',
@@ -277,33 +290,62 @@ export const TABS_CASHU: {screen?: string; title: string; tab: SelectedTab}[] = 
   },
 ];
 
-export const TABS_WALLET_BTC: {screen?: string; title: string; tab: SelectedTab}[] = [
-  {
-    title: 'Lightning',
-    screen: 'Lightning',
-    tab: SelectedTab.LIGHTNING_NETWORK_WALLET,
-  },
+export const TABS_WALLET: {screen?: string; title: string; tab: SelectedTab}[] = [
   {
     title: 'Cashu',
     screen: 'Cashu',
     tab: SelectedTab.CASHU_WALLET,
   },
+  // {
+  //   title: 'Portfolio',
+  //   screen: 'Portfolio',
+  //   tab: SelectedTab.PORTFOLIO,
+  // },
+  {
+    title: 'Lightning',
+    screen: 'Lightning',
+    tab: SelectedTab.LIGHTNING_NETWORK_WALLET,
+  },
+
+  {
+    title: 'Bridge',
+    screen: 'Bridge',
+    tab: SelectedTab.BRIDGE_LAYERSWAP,
+  },
+  {
+    title: 'Ramp',
+    screen: 'Ramp',
+    tab: SelectedTab.ONRAMP_OFFRAMP,
+  },
 ];
 
-export const TABS_WALLET: {screen?: string; title: string; tab: SelectedTab}[] = [
+export const TABS_WALLET_BTC: {screen?: string; title: string; tab: SelectedTab}[] = [
+  {
+    title: 'Cashu',
+    screen: 'Cashu',
+    tab: SelectedTab.CASHU_WALLET,
+  },
+  {
+    title: 'Lightning',
+    screen: 'Lightning',
+    tab: SelectedTab.LIGHTNING_NETWORK_WALLET,
+  },
+];
+
+export const TABS_ONBOARDING_WALLET: {screen?: string; title: string; tab: SelectedTab}[] = [
+  {
+    title: 'Dynamic',
+    screen: 'Dynamic',
+    tab: SelectedTab.DYNAMIC_GENERAL,
+  },
+  {
+    title: 'Generate',
+    screen: 'Generate',
+    tab: SelectedTab.GENERATE_INTERNAL_WALLET,
+  },
   {
     title: 'Portfolio',
     screen: 'Portfolio',
     tab: SelectedTab.PORTFOLIO,
-  },
-  {
-    title: 'Lightning',
-    screen: 'Lightning',
-    tab: SelectedTab.LIGHTNING_NETWORK_WALLET,
-  },
-  {
-    title: 'Cashu',
-    screen: 'Cashu',
-    tab: SelectedTab.CASHU_WALLET,
   },
 ];
